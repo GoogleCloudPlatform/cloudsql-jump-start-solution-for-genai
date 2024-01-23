@@ -1,0 +1,13 @@
+.envrc
+.terraform*
+key.json
+terraform.tfstate*
+terraform.tfvars
+backend.conf
+apply.sh
+/logs
+target
+.idea
+*.iml
+__pycache__
+venv

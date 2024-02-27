@@ -302,6 +302,9 @@ Next you can run a query against our pgvector data:
 ```
 # To send a search do this:
 curl <EXTERNAL_IP>/search --get --data-urlencode "q=indoor games"
+
+# Or using the localhost port forwarding
+curl localhost:8080/search --get --data-urlencode "q=indoor games" | jq .
 ```
 
 That response will be a bunch of matching toy products.
@@ -311,6 +314,10 @@ And finally, we can engage our LLM chatbot like so:
 ```
 curl <EXTERNAL_IP>/chatbot --get \
   --data-urlencode "q=what is a good toy for rainy days?"
+
+# Or using the localhost port forwarding
+curl localhost:8080/chatbot --get \
+  --data-urlencode "q=what is a good toy for rainy days?" | jq .
 ```
 
 That response will be from VertexAI and should be a single toy product as

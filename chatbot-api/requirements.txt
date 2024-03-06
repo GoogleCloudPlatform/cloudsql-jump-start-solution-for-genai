@@ -38,7 +38,7 @@ huggingface-hub==0.19.4
 idna==3.6
 jsonpatch==1.33
 jsonpointer==2.4
-langchain==0.0.351
+langchain==0.1.11
 langchain-community==0.0.4
 langchain-core==0.1.1
 langsmith==0.0.72

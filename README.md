@@ -291,11 +291,11 @@ to stop the port-forwarding process to close the local listener.
 Now it's time to test our wiring:
 
 ```
-curl -i <EXTERNAL_IP>
+curl -i <EXTERNAL_IP>/version
 ```
 
-The root endpoint will print out the Postgres version in the response. If the
-app is connected, you'll see the details about your Postgres server.
+The version endpoint will print out the Postgres version in the response. If
+the app is connected, you'll see the details about your Postgres server.
 
 Next you can run a query against our pgvector data:
 

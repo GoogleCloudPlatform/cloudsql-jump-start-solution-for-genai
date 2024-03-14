@@ -19,6 +19,8 @@ import google.auth
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from google.auth.transport.requests import Request as GRequest
 from typing import Union
 from google.cloud import aiplatform
@@ -190,6 +192,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/search")
@@ -202,8 +205,15 @@ async def ask_chatbot(request: Request, q: Union[str, None] = None):
     return await find_by_chatbot(request.app.state.pool, q)
 
 
-@app.get("/")
-async def root(request: Request):
+@app.get("/version")
+async def db_version(request: Request):
     async with request.app.state.pool.acquire() as conn:
         version = await conn.fetch("select version()")
         return version[0]
+
+
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="index.html",
+    )

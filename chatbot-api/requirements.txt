@@ -40,7 +40,7 @@ jsonpatch==1.33
 jsonpointer==2.4
 langchain==0.0.351
 langchain-community==0.0.4
-langchain-core==0.1.1
+langchain-core==0.1.35
 langsmith==0.0.72
 marshmallow==3.20.1
 multidict==6.0.4

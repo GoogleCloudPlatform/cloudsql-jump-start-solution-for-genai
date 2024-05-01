@@ -38,7 +38,7 @@ DB_NAME = os.getenv("DB_NAME")
 aiplatform.init(project=f"{PROJECT_ID}", location=f"{REGION}")
 llm = VertexAI()
 embeddings_service = VertexAIEmbeddings(
-    model_name="textembedding-gecko@001",
+    model_name="textembedding-gecko@003",
 )
 
 
@@ -184,6 +184,7 @@ async def lifespan(app: FastAPI):
         user=DB_USER,
         password=get_password,
         database=DB_NAME,
+        ssl="require",
     )
     yield
     await asyncio.wait_for(app.state.pool.close(), 10)

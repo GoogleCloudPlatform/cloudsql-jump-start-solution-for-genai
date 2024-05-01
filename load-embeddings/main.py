@@ -20,8 +20,8 @@ import time
 import google.auth
 from google.cloud import aiplatform
 from google.auth.transport.requests import Request as GRequest
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import VertexAIEmbeddings
+from langchain_google_vertexai import VertexAIEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import numpy as np
 import pandas as pd
 from pgvector.asyncpg import register_vector
@@ -34,20 +34,14 @@ DB_NAME = os.getenv("DB_NAME")
 REGION = os.getenv("REGION")
 PROJECT_ID = os.getenv("PROJECT_ID")
 
-DATASET_FILE = "retail_toy_dataset.csv"
-DATASET_URL = "/".join([
-    "https://github.com",
-    "GoogleCloudPlatform",
-    "python-docs-samples",
-    "raw/main/cloud-sql/postgres/pgvector/data",
-    f"{DATASET_FILE}"
-])
+DATASET_FILE = "edinburgh_xsum_dataset.csv"
 
 
 def load_dataset(location) -> pd.DataFrame:
     """Loads the dataset from the specified location"""
     df = pd.read_csv(location)
-    df = df.loc[:, ["product_id", "product_name", "description", "list_price"]]
+    df=df.rename(columns={"id": "article_id", "document": "article"})
+    df = df.loc[:, ["article_id", "article", "summary"]]
     df = df.dropna()
     return df
 
@@ -56,26 +50,25 @@ async def load_into_db(conn: asyncpg.Connection, df: pd.DataFrame):
     """Loads data into a Postgres database table.
 
     This may take a few minutes to run."""
-    await conn.execute("DROP TABLE IF EXISTS products CASCADE")
+    await conn.execute("DROP TABLE IF EXISTS articles CASCADE")
     await conn.execute(
         """
-        CREATE TABLE products(
-            product_id VARCHAR(1024) PRIMARY KEY,
-            product_name TEXT,
-            description TEXT,
-            list_price NUMERIC
-        )
+        CREATE TABLE articles(
+            article_id INTEGER PRIMARY KEY,
+            article TEXT,
+            summary TEXT
+        );
         """
     )
-    # Copy the dataframe to the `products` table.
+    # Copy the dataframe to the `articles` table.
     tuples = list(df.itertuples(index=False))
     await conn.copy_records_to_table(
-        "products", records=tuples, columns=list(df), timeout=10
+        "articles", records=tuples, columns=list(df), timeout=10
     )
 
 
-def split_product_descriptions(df: pd.DataFrame):
-    """Splits long product descriptions into smaller chunks"""
+def split_articles(df: pd.DataFrame):
+    """Splits long articles into smaller chunks"""
     text_splitter = RecursiveCharacterTextSplitter(
         separators=[".", "\n"],
         chunk_size=500,
@@ -83,12 +76,12 @@ def split_product_descriptions(df: pd.DataFrame):
         length_function=len,
     )
     chunked = []
-    for index, row in df.iterrows():
-        product_id = row["product_id"]
-        desc = row["description"]
-        splits = text_splitter.create_documents([desc])
+    for _, row in df.iterrows():
+        article_id = row["article_id"]
+        article = row["article"]
+        splits = text_splitter.create_documents([article])
         for s in splits:
-            r = {"product_id": product_id, "content": s.page_content}
+            r = {"article_id": article_id, "content": s.page_content}
             chunked.append(r)
     return chunked
 
@@ -98,7 +91,7 @@ def retry_with_backoff(func, *args, retry_delay=5, backoff_factor=2, **kwargs):
     backoff."""
     max_attempts = 10
     retries = 0
-    for i in range(max_attempts):
+    for _ in range(max_attempts):
         try:
             return func(*args, **kwargs)
         except Exception as e:
@@ -118,9 +111,9 @@ def generate_vector_embeddings(df: pd.DataFrame):
     This may take a few minutes to run."""
     aiplatform.init(project=f"{PROJECT_ID}", location=f"{REGION}")
     embeddings_service = VertexAIEmbeddings(
-        model_name="textembedding-gecko@001",
+        model_name="textembedding-gecko@003",
     )
-    chunked = split_product_descriptions(df)
+    chunked = split_articles(df)
 
     batch_size = 5
     for i in range(0, len(chunked), batch_size):
@@ -132,20 +125,20 @@ def generate_vector_embeddings(df: pd.DataFrame):
             x["embedding"] = e
 
     # Store the generated embeddings in a pandas dataframe.
-    product_embeddings = pd.DataFrame(chunked)
-    print(product_embeddings.head())
+    article_embeddings = pd.DataFrame(chunked)
+    print(article_embeddings.head())
 
-    return product_embeddings
+    return article_embeddings
 
 
-async def store_embeddings_in_db(conn: asyncpg.Connection, product_embeddings):
+async def store_embeddings_in_db(conn: asyncpg.Connection, article_embeddings):
     """Store the generated vector embeddings in a PostgreSQL table."""
-    await conn.execute("DROP TABLE IF EXISTS product_embeddings")
+    await conn.execute("DROP TABLE IF EXISTS article_embeddings")
 
     await conn.execute(
         """
-        CREATE TABLE product_embeddings(
-        product_id VARCHAR(1024) NOT NULL REFERENCES products(product_id),
+        CREATE TABLE article_embeddings(
+        article_id INTEGER NOT NULL REFERENCES articles(article_id),
         content TEXT,
         embedding vector(768)
         )
@@ -153,15 +146,15 @@ async def store_embeddings_in_db(conn: asyncpg.Connection, product_embeddings):
     )
 
     # Store all the generated embeddings back into the database.
-    for index, row in product_embeddings.iterrows():
+    for _, row in article_embeddings.iterrows():
         await conn.execute(
             """
-            INSERT INTO product_embeddings
-                (product_id, content, embedding)
+            INSERT INTO article_embeddings
+                (article_id, content, embedding)
             VALUES
                 ($1, $2, $3)
             """,
-            row["product_id"],
+            row["article_id"],
             row["content"],
             np.array(row["embedding"]),
         )
@@ -174,19 +167,19 @@ async def create_embeddings_index(conn: asyncpg.Connection):
     operator = "vector_cosine_ops"
     lists = 100
 
-    # Create an HNSW index on the `product_embeddings` table.
+    # Create an HNSW index on the `article_embeddings` table.
     await conn.execute(
         f"""
-        CREATE INDEX ON product_embeddings
+        CREATE INDEX ON article_embeddings
           USING hnsw(embedding {operator})
           WITH (m = {m}, ef_construction = {ef_construction})
         """
     )
 
-    # Create an IVFFLAT index on the `product_embeddings` table.
+    # Create an IVFFLAT index on the `article_embeddings` table.
     await conn.execute(
         f"""
-        CREATE INDEX ON product_embeddings
+        CREATE INDEX ON article_embeddings
           USING ivfflat(embedding {operator})
           WITH (lists = {lists})
         """
@@ -217,6 +210,7 @@ async def main():
         user=DB_USER,
         password=get_password,
         database=DB_NAME,
+        ssl="require",
     ) as pool:
         async with pool.acquire() as conn:
             print("Registering vector type...")

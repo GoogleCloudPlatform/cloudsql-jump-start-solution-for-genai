@@ -184,6 +184,7 @@ async def lifespan(app: FastAPI):
         user=DB_USER,
         password=get_password,
         database=DB_NAME,
+        ssl="require",
     )
     yield
     await asyncio.wait_for(app.state.pool.close(), 10)

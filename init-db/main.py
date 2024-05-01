@@ -30,6 +30,7 @@ async def main():
         user=DB_USER,
         password=DB_PASS,
         database=DB_NAME,
+        ssl="require",
     )
     print("Granting privileges on database...")
     print("Granting privileges on public schema...")

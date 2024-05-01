@@ -217,6 +217,7 @@ async def main():
         user=DB_USER,
         password=get_password,
         database=DB_NAME,
+        ssl="require",
     ) as pool:
         async with pool.acquire() as conn:
             print("Registering vector type...")

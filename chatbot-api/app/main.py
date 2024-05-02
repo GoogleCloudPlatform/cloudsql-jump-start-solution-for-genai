@@ -23,11 +23,10 @@ from google.auth.transport.requests import Request as GRequest
 from typing import Union
 from google.cloud import aiplatform
 from pgvector.asyncpg import register_vector
-from langchain.embeddings import VertexAIEmbeddings
+from langchain_core.documents import Document
+from langchain_core.prompts import PromptTemplate
+from langchain_google_vertexai import VertexAI, VertexAIEmbeddings
 from langchain.chains.summarize import load_summarize_chain
-from langchain.docstore.document import Document
-from langchain.llms import VertexAI
-from langchain.prompts import PromptTemplate
 
 REGION = os.getenv("REGION")
 PROJECT_ID = os.getenv("PROJECT_ID")
@@ -35,20 +34,18 @@ DB_HOST = os.getenv("DB_HOST")
 DB_USER = os.getenv("DB_USER")
 DB_NAME = os.getenv("DB_NAME")
 
-aiplatform.init(project=f"{PROJECT_ID}", location=f"{REGION}")
+aiplatform.init(project=PROJECT_ID, location=REGION)
 llm = VertexAI()
 embeddings_service = VertexAIEmbeddings(
-    model_name="textembedding-gecko@003",
+    model_name="textembedding-gecko@003"
 )
 
 
 async def find_by_query(pool, q):
     """
-    Finding similar toy products using pgvector cosine search operator
+    Finding similar news articles using pgvector cosine search operator
     """
-
-    min_price = 25
-    max_price = 100
+    # Configure the search parameters
     similarity_threshold = 0.1
     num_matches = 50
 
@@ -57,27 +54,24 @@ async def find_by_query(pool, q):
     async with pool.acquire() as conn:
         await register_vector(conn)
 
-        # Find similar products to the query using cosine similarity search
+        # Find similar articles to the query using cosine similarity search
         # over all vector embeddings.
         # This new feature is provided by `pgvector`.
         results = await conn.fetch(
             """
             WITH vector_matches AS (
-              SELECT product_id, 1 - (embedding <=> $1) AS similarity
-              FROM product_embeddings
+              SELECT article_id, 1 - (embedding <=> $1) AS similarity
+              FROM article_embeddings
               WHERE 1 - (embedding <=> $1) > $2
               ORDER BY similarity DESC
               LIMIT $3
             )
-            SELECT product_name, list_price, description FROM products
-            WHERE product_id IN (SELECT product_id FROM vector_matches)
-            AND list_price >= $4 AND list_price <= $5
+            SELECT article_id, article, summary FROM articles
+            WHERE article_id IN (SELECT article_id FROM vector_matches)
             """,
             qe,
             similarity_threshold,
             num_matches,
-            min_price,
-            max_price,
         )
 
         if len(results) == 0:
@@ -86,39 +80,39 @@ async def find_by_query(pool, q):
 
         matches = []
         for r in results:
-            # Collect the description for all the matched similar toy products.
+            # Collect the article for all the matched similar articles.
             matches.append({
-                "product_name": r["product_name"],
-                "description": r["description"],
-                "list_price": round(r["list_price"], 2),
+                "article_id": r["article_id"],
+                "article": r["article"],
+                "summary": r["summary"],
             })
         return matches
 
 map_prompt_template = """
-You will be given a detailed description of a toy product.
-This description is enclosed in triple backticks (```).
-Using this description only, extract the name of the toy,
-the price of the toy and its features.
+You will be given a news article.
+The article information is enclosed in triple backticks (```).
+Using this informatin only, extract the article ID and generate a concise
+summary of the article, highlighting the main themes of the article.
 
 ```{text}```
 SUMMARY:
 """
 
 combine_prompt_template = """
-You will be given a detailed description different toy products
-enclosed in triple backticks (```) and a question enclosed in
-double backticks(``).
+You will be given a set of summaries of news articles.
+The summaries are enclosed in triple backticks (```) and a question is enclosed
+in double backticks(``).
 
-Select one toy that is most relevant to answer the question.
-Using that selected toy description, answer the following
+Select one article summary that is most relevant to answer the question.
+Using that single selected article summary, answer the following
 question in as much detail as possible.
 
-You should only use the information in the description.
-Your answer should include the name of the toy, the price of the toy
-and its features. Your answer should be less than 200 words.
+You should only use the information in the summaries.
+Your answer should include a single article ID, the general theme of the article,
+and a concise summary. Your answer should be less than 200 words.
 Your answer should be in Markdown in a numbered list format.
 
-Description:
+Articles:
 ```{text}```
 
 
@@ -144,10 +138,10 @@ async def find_by_chatbot(pool, q):
 
     matches = [
         f"""
-        The name of the toy is {r["product_name"]}.
-        The price of the toy is ${round(r["list_price"], 2)}.
-        Its description is below:
-        {r["description"]}.
+        The ID of the article is {r["article_id"]}.
+        The text of the article is {r["article"]}.
+        Its summary is below:
+        {r["summary"]}.
         """ for r in matches
     ]
 

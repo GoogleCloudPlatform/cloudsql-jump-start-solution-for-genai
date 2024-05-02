@@ -10,3 +10,4 @@ langchain-text-splitters==0.0.1
 numpy==1.26.4
 pandas==2.2.2
 pgvector==0.2.5
+uvicorn==0.29.0

@@ -18,7 +18,7 @@ module "gke" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/beta-autopilot-private-cluster"
   version = "~> 29.0"
 
-  name       = "prod-toy-store-semantic-search"
+  name       = "prod-articles-store-semantic-search"
   project_id = var.google_cloud_k8s_project
   region     = var.google_cloud_default_region
   network    = module.gcp_network.network_name

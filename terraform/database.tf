@@ -21,7 +21,7 @@ resource "random_password" "default" {
 resource "google_sql_database_instance" "default" {
   project          = var.google_cloud_db_project
   database_version = "POSTGRES_15"
-  name             = "toys-inventory"
+  name             = "articles-inventory"
   region           = var.google_cloud_default_region
   root_password    = random_password.default.result
   settings {

@@ -20,6 +20,6 @@ COPY ./requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY ./main.py /code/main.py
-COPY ./retail_toy_dataset.csv /code/retail_toy_dataset.csv
+COPY ./edinburgh_xsum_dataset.csv /code/edinburgh_xsum_dataset.csv
 
 CMD ["python", "main.py"]

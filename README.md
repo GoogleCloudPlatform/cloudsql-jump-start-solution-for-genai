@@ -137,13 +137,13 @@ infrastructure. Run `tf apply`. This will take awhile as it has to:
 
 - Create a VPC network with a subnet with both a primary range and two
   secondary ranges
-- Create a Cloud SQL database instance with IAM authentication enabled
-- Create an IAM user for running apps and authenticating to the database
+- Create a Cloud SQL database instance with IAM database authentication enabled
+- Create an IAM principal for running apps and authenticating to the database
 - Create a database for the app
 - Create a GKE autopilot cluster
-- C.onfigure workload identity associated with the IAM user
+- Configure workload identity associated with the IAM principal
 - Create an Artifact Registry for pushing images
-- When using two projects, add the IAM user as a member of the database
+- When using two projects, add the IAM principal as a member of the database
   project
 - etc.
 

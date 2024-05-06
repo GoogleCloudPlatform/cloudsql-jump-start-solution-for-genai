@@ -13,15 +13,15 @@
 # limitations under the License.
 
 import asyncio
-import asyncpg
 import os
 import time
 
+import asyncpg
 import google.auth
-from google.cloud import aiplatform
 from google.auth.transport.requests import Request as GRequest
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import VertexAIEmbeddings
+from google.cloud import aiplatform
+from langchain_google_vertexai import VertexAIEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import numpy as np
 import pandas as pd
 from pgvector.asyncpg import register_vector
@@ -30,18 +30,9 @@ from pgvector.asyncpg import register_vector
 DB_HOST = os.getenv("DB_HOST")
 DB_USER = os.getenv("DB_USER")
 DB_NAME = os.getenv("DB_NAME")
-
 REGION = os.getenv("REGION")
 PROJECT_ID = os.getenv("PROJECT_ID")
-
 DATASET_FILE = "retail_toy_dataset.csv"
-DATASET_URL = "/".join([
-    "https://github.com",
-    "GoogleCloudPlatform",
-    "python-docs-samples",
-    "raw/main/cloud-sql/postgres/pgvector/data",
-    f"{DATASET_FILE}"
-])
 
 
 def load_dataset(location) -> pd.DataFrame:
@@ -83,7 +74,7 @@ def split_product_descriptions(df: pd.DataFrame):
         length_function=len,
     )
     chunked = []
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         product_id = row["product_id"]
         desc = row["description"]
         splits = text_splitter.create_documents([desc])
@@ -118,17 +109,16 @@ def generate_vector_embeddings(df: pd.DataFrame):
     This may take a few minutes to run."""
     aiplatform.init(project=f"{PROJECT_ID}", location=f"{REGION}")
     embeddings_service = VertexAIEmbeddings(
-        model_name="textembedding-gecko@001",
+        model_name="textembedding-gecko@003",
     )
     chunked = split_product_descriptions(df)
 
     batch_size = 5
     for i in range(0, len(chunked), batch_size):
-        request = [x["content"] for x in chunked[i: i + batch_size]]
-        response = retry_with_backoff(
-            embeddings_service.embed_documents, request)
+        request = [x["content"] for x in chunked[i : i + batch_size]]
+        response = retry_with_backoff(embeddings_service.embed_documents, request)
         # Store the retrieved vector embeddings for each chunk back.
-        for x, e in zip(chunked[i: i + batch_size], response):
+        for x, e in zip(chunked[i : i + batch_size], response):
             x["embedding"] = e
 
     # Store the generated embeddings in a pandas dataframe.
@@ -192,6 +182,7 @@ async def create_embeddings_index(conn: asyncpg.Connection):
         """
     )
 
+
 creds, _ = google.auth.default(
     scopes=["https://www.googleapis.com/auth/sqlservice.login"]
 )
@@ -235,6 +226,7 @@ async def main():
             await create_embeddings_index(conn)
 
     print("Done")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

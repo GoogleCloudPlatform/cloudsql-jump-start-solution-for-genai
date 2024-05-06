@@ -13,21 +13,21 @@
 # limitations under the License.
 
 import asyncio
-import asyncpg
-import os
-import google.auth
-
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
-from google.auth.transport.requests import Request as GRequest
+import os
 from typing import Union
+
+import asyncpg
+from fastapi import FastAPI, Request
+import google.auth
+from google.auth.transport.requests import Request as GRequest
 from google.cloud import aiplatform
-from pgvector.asyncpg import register_vector
-from langchain.embeddings import VertexAIEmbeddings
 from langchain.chains.summarize import load_summarize_chain
-from langchain.docstore.document import Document
-from langchain.llms import VertexAI
-from langchain.prompts import PromptTemplate
+from langchain_core.documents import Document
+from langchain_core.prompts import PromptTemplate
+from langchain_google_vertexai import VertexAI, VertexAIEmbeddings
+from pgvector.asyncpg import register_vector
+
 
 REGION = os.getenv("REGION")
 PROJECT_ID = os.getenv("PROJECT_ID")
@@ -38,7 +38,7 @@ DB_NAME = os.getenv("DB_NAME")
 aiplatform.init(project=f"{PROJECT_ID}", location=f"{REGION}")
 llm = VertexAI()
 embeddings_service = VertexAIEmbeddings(
-    model_name="textembedding-gecko@001",
+    model_name="textembedding-gecko@003",
 )
 
 
@@ -81,18 +81,20 @@ async def find_by_query(pool, q):
         )
 
         if len(results) == 0:
-            raise Exception(
-                "Did not find any results. Adjust the query parameters.")
+            raise Exception("Did not find any results. Adjust the query parameters.")
 
         matches = []
         for r in results:
             # Collect the description for all the matched similar toy products.
-            matches.append({
-                "product_name": r["product_name"],
-                "description": r["description"],
-                "list_price": round(r["list_price"], 2),
-            })
+            matches.append(
+                {
+                    "product_name": r["product_name"],
+                    "description": r["description"],
+                    "list_price": round(r["list_price"], 2),
+                }
+            )
         return matches
+
 
 map_prompt_template = """
 You will be given a detailed description of a toy product.
@@ -134,7 +136,8 @@ async def find_by_chatbot(pool, q):
     matches = await find_by_query(pool, q)
 
     map_prompt = PromptTemplate(
-        template=map_prompt_template, input_variables=["text"],
+        template=map_prompt_template,
+        input_variables=["text"],
     )
 
     combine_prompt = PromptTemplate(
@@ -148,7 +151,8 @@ async def find_by_chatbot(pool, q):
         The price of the toy is ${round(r["list_price"], 2)}.
         Its description is below:
         {r["description"]}.
-        """ for r in matches
+        """
+        for r in matches
     ]
 
     docs = [Document(page_content=t) for t in matches]
@@ -156,13 +160,16 @@ async def find_by_chatbot(pool, q):
         llm,
         chain_type="map_reduce",
         map_prompt=map_prompt,
-        combine_prompt=combine_prompt
+        combine_prompt=combine_prompt,
     )
-    answer = chain.run({
-        "input_documents": docs,
-        "user_query": q,
-    })
+    answer = chain.invoke(
+        {
+            "input_documents": docs,
+            "user_query": q,
+        }
+    )
     return {"answer": answer}
+
 
 creds, _ = google.auth.default(
     scopes=["https://www.googleapis.com/auth/sqlservice.login"]

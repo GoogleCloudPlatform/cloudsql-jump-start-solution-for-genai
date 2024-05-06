@@ -45,7 +45,7 @@ async def find_by_query(pool, q):
     """
     # Configure the search parameters
     similarity_threshold = 0.1
-    num_matches = 50
+    num_matches = 20
 
     qe = embeddings_service.embed_query(q)
 

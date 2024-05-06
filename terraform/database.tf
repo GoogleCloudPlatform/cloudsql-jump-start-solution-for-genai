@@ -65,7 +65,7 @@ resource "google_sql_user" "iam_sa_user" {
 }
 
 resource "google_sql_database" "default" {
-  name     = "retail"
+  name     = "news"
   instance = google_sql_database_instance.default.name
   project  = var.google_cloud_db_project
 }

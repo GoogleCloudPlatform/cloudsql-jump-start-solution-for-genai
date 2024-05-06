@@ -148,11 +148,15 @@ infrastructure. Run `tf apply`. This will take awhile as it has to:
 - Create an IAM user for running apps and authenticating to the database
 - Create a database for the app
 - Create a GKE autopilot cluster
-- C.onfigure workload identity associated with the IAM user
+- Configure workload identity associated with the IAM user
 - Create an Artifact Registry for pushing images
 - When using two projects, add the IAM user as a member of the database
   project
 - etc.
+
+**Note:** If you are running the terraform commands on Cloud Shell and see
+the following error ending with `connect: cannot assign requested address`,
+then please see [this known issue and fix](https://github.com/hashicorp/terraform-provider-google/issues/6782#issuecomment-874574409).
 
 Now would be a good time to read through the various Terraform files.
 

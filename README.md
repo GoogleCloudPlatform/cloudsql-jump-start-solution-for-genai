@@ -29,23 +29,22 @@ To get started you will need to install:
 No one wants to write "terraform" on the CLI. So do this instead to save some
 keystrokes:
 
-```
+```sh
 alias tf="terraform"
 ```
 
 Ditto with `kubectl`:
 
-```
+```sh
 alias k="kubectl"
 ```
 
 Lastly, make sure you have gcloud pointing at the correct project where you
 want this infrastructure to live:
 
-```
+```sh
 gcloud config set project <PROJECT_ID>
 ```
-
 
 ## Overview of the demo
 
@@ -64,7 +63,7 @@ Next create a file called `terraform.tfvars`. This is where we will keep our
 local configuration outside of source control. The file should provide values
 for the variables in `variables.tf`. For example:
 
-```
+```sh
 google_cloud_project        = "my-cool-project"
 google_cloud_default_region = "us-central1"
 ```
@@ -77,14 +76,14 @@ will hold all Terraform state files.
 Next, run the following to see what changes will be made. You should see a
 diff that includes a single storage bucket.
 
-```
+```sh
 tf init
 tf plan
 ```
 
 Next, run:
 
-```
+```sh
 tf apply
 ```
 
@@ -96,7 +95,7 @@ Finally, run `tf output` to get the bucket name. Save this for the next step,
 where we will tell the main Terraform deployment where to save state. The
 `tf output` command should show something like:
 
-```
+```sh
 storage_bucket = "2963768bbef6caf7-bucket-tfstate"
 ```
 
@@ -107,21 +106,21 @@ and create the all the infrastructure. First, we need to configure Terraform.
 
 First, create a `backend.conf` file (updating the bucket name to your bucket):
 
-```
+```sh
 bucket = "2963768bbef6caf7-bucket-tfstate"
 prefix = "terraform/state"
 ```
 
 Next, run:
 
-```
+```sh
 tf init -backend-config=backend.conf
 ```
 
 Then, create a `terraform.tfvars` file to configure the deployment. The contents
 should look something like this:
 
-```
+```sh
 google_cloud_db_project     = "my-cool-project"
 google_cloud_k8s_project    = "my-cool-project"
 google_cloud_default_region = "us-central1"
@@ -177,7 +176,7 @@ To build the images, change into each directory named above and run the
 following command. Note for a two project setup these images should be created
 in the GKE cluster project (add `--project=<GKE_PROJECT>` below).
 
-```
+```sh
 gcloud builds submit --config cloudbuild.yaml --region <YOUR_CHOSEN_REGION>
 ```
 
@@ -197,7 +196,7 @@ deployment.yaml files, you'll see the image has a `__PROJECT__` string in the
 this for us. For two project setups, the project name should be the project
 that hosts the GKE cluster and where the images were built above.
 
-```
+```sh
 ./scripts/configure-k8s.sh <YOUR_PROJECT_HERE>
 
 # For example:
@@ -207,7 +206,7 @@ that hosts the GKE cluster and where the images were built above.
 
 Now let's connect kubectl to your cluster:
 
-```
+```sh
 # Run this only if you haven't connected to a GKE cluster with gcloud before
 gcloud components install gke-gcloud-auth-plugin
 
@@ -226,19 +225,19 @@ First, we will deploy the init-db job that connects to the database as the
 Postgres user, creates the database, grants permissions to the IAM user, and
 creates the pgvector extension.
 
-```
+```sh
 k apply -f init-db/k8s/job.yaml
 ```
 
 Either monitor that job with k9s, or:
 
-```
+```sh
 k get jobs
 ```
 
 Once you see the job is completed, move on to the second job.
 
-```
+```sh
 k apply -f load-embeddings/k8s/job.yaml
 ```
 
@@ -248,7 +247,7 @@ using pgvector.
 
 When that job is done, we're ready to deploy our app:
 
-```
+```sh
 k apply -f chatbot-api/k8s/deployment.yaml
 ```
 
@@ -256,14 +255,14 @@ Next, we'll create a load balancer to make the API accessible from the public
 internet. Skip the next two steps if you would rather just set up
 port-forwarding to localhost.
 
-```
+```sh
 k apply -f chatbot-api/k8s/service.yaml
 ```
 
 The service deployment will take a bit to provision an external IP address.
 View the progress with:
 
-```
+```sh
 k get services
 ```
 
@@ -276,13 +275,13 @@ locally and interact with it locally.
 
 First, you need to know the pod name where the deployment is running:
 
-```
+```sh
 k get pods
 ```
 
 Find the pod name from that result, and run:
 
-```
+```sh
 k port-forward <POD_NAME> 8080:80
 ```
 
@@ -294,7 +293,7 @@ to stop the port-forwarding process to close the local listener.
 
 Now it's time to test our wiring:
 
-```
+```sh
 curl -i <EXTERNAL_IP>
 ```
 
@@ -303,7 +302,7 @@ app is connected, you'll see the details about your Postgres server.
 
 Next you can run a query against our pgvector data:
 
-```
+```sh
 # To send a search do this:
 curl <EXTERNAL_IP>/search --get --data-urlencode "q=indoor games"
 
@@ -315,7 +314,7 @@ That response will be a bunch of matching toy products.
 
 And finally, we can engage our LLM chatbot like so:
 
-```
+```sh
 curl <EXTERNAL_IP>/chatbot --get \
   --data-urlencode "q=what is a good toy for rainy days?"
 
@@ -332,20 +331,20 @@ picked from all the possible matches.
 Now that you're done and want to tear all the infrastructure down, first delete
 the deployment:
 
-```
+```sh
 k delete -f chatbot-api/k8s/deployment.yaml
 ```
 
 If you created a load balancer also run:
 
-```
+```sh
 k delete -f chatbot-api/k8s/service.yaml
 ```
 
 Then, clean up the infrastructure. It's possible you might have to run destroy
 twice if you see errors.
 
-```
+```sh
 cd terraform
 tf destroy
 ```

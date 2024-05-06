@@ -168,7 +168,7 @@ async def find_by_chatbot(pool, q):
             "user_query": q,
         }
     )
-    return {"answer": answer}
+    return {"answer": answer["output_text"]}
 
 
 creds, _ = google.auth.default(

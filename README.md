@@ -211,7 +211,7 @@ Now let's connect kubectl to your cluster:
 gcloud components install gke-gcloud-auth-plugin
 
 # Now configure kubectl to talk to your cluster
-gcloud container clusters get-credentials <CLUSTER_NAME> \
+gcloud container clusters get-credentials prod-toy-store-semantic-search \
     --region=<COMPUTE_REGION>
 ```
 

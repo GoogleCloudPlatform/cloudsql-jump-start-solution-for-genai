@@ -152,11 +152,11 @@ async def find_by_chatbot(pool, q):
         map_prompt=map_prompt,
         combine_prompt=combine_prompt
     )
-    answer = chain.run({
+    answer = chain.invoke({
         "input_documents": docs,
         "user_query": q,
     })
-    return {"answer": answer}
+    return {"answer": answer["output_text"]}
 
 creds, _ = google.auth.default(
     scopes=["https://www.googleapis.com/auth/sqlservice.login"]

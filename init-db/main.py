@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import asyncio
-import asyncpg
 import os
+
+import asyncpg
 
 DB_HOST = os.getenv("DB_HOST")
 DB_USER = os.getenv("DB_USER")

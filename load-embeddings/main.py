@@ -13,34 +13,31 @@
 # limitations under the License.
 
 import asyncio
-import asyncpg
 import os
 import time
 
+import asyncpg
 import google.auth
-from google.cloud import aiplatform
 from google.auth.transport.requests import Request as GRequest
+from google.cloud import aiplatform
 from langchain_google_vertexai import VertexAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import numpy as np
 import pandas as pd
 from pgvector.asyncpg import register_vector
 
-
 DB_HOST = os.getenv("DB_HOST")
 DB_USER = os.getenv("DB_USER")
 DB_NAME = os.getenv("DB_NAME")
-
 REGION = os.getenv("REGION")
 PROJECT_ID = os.getenv("PROJECT_ID")
-
 DATASET_FILE = "edinburgh_xsum_dataset.csv"
 
 
 def load_dataset(location) -> pd.DataFrame:
     """Loads the dataset from the specified location"""
     df = pd.read_csv(location)
-    df=df.rename(columns={"id": "article_id", "document": "article"})
+    df = df.rename(columns={"id": "article_id", "document": "article"})
     df = df.loc[:, ["article_id", "article", "summary"]]
     df = df.dropna()
     return df
@@ -117,11 +114,10 @@ def generate_vector_embeddings(df: pd.DataFrame):
 
     batch_size = 5
     for i in range(0, len(chunked), batch_size):
-        request = [x["content"] for x in chunked[i: i + batch_size]]
-        response = retry_with_backoff(
-            embeddings_service.embed_documents, request)
+        request = [x["content"] for x in chunked[i : i + batch_size]]
+        response = retry_with_backoff(embeddings_service.embed_documents, request)
         # Store the retrieved vector embeddings for each chunk back.
-        for x, e in zip(chunked[i: i + batch_size], response):
+        for x, e in zip(chunked[i : i + batch_size], response):
             x["embedding"] = e
 
     # Store the generated embeddings in a pandas dataframe.
@@ -185,6 +181,7 @@ async def create_embeddings_index(conn: asyncpg.Connection):
         """
     )
 
+
 creds, _ = google.auth.default(
     scopes=["https://www.googleapis.com/auth/sqlservice.login"]
 )
@@ -228,6 +225,7 @@ async def main():
             await create_embeddings_index(conn)
 
     print("Done")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

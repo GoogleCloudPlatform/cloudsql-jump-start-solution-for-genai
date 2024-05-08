@@ -50,7 +50,7 @@ async def find_by_query(pool, q):
     min_price = 25
     max_price = 100
     similarity_threshold = 0.1
-    num_matches = 50
+    num_matches = 25
 
     qe = embeddings_service.embed_query(q)
 

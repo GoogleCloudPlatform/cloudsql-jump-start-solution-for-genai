@@ -191,17 +191,17 @@ We have three steps:
 
 Before we deploy anything, we need to update the Kubernetes YAML files to point
 to the images we built above. Right now if you look in any of the job.yaml or
-deployment.yaml files, you'll see the image has a `__PROJECT__` string in the
-`image` property. We need to change this. Fortunately, we have a script to do
-this for us. For two project setups, the project name should be the project
+deployment.yaml files, you'll see the image has a `__PROJECT__` and `__REGION__`
+string in the `image` property. We need to change this. Fortunately, we have a
+script to do this for us. For two project setups, the project name should be the project
 that hosts the GKE cluster and where the images were built above.
 
 ```sh
-./scripts/configure-k8s.sh <YOUR_PROJECT_HERE>
+./scripts/configure-k8s.sh <YOUR_PROJECT_HERE> <YOUR_CHOSEN_REGION>
 
 # For example:
 
-./scripts/configure-k8s.sh my-cool-project
+./scripts/configure-k8s.sh my-cool-project us-central1
 ```
 
 Now let's connect kubectl to your cluster:

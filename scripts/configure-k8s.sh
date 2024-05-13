@@ -37,4 +37,7 @@ yaml_templates = [
 ]
 
 for t in yaml_templates:
-    prepare_template(t, sys.argv[1], sys.argv[2])
+    if len(sys.argv) == 3:
+        prepare_template(t, sys.argv[1], sys.argv[2])
+    else:
+        prepare_template(t, sys.argv[1])

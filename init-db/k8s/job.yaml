@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: init-db
-        image: us-central1-docker.pkg.dev/__PROJECT__/default-repository/init-db:latest
+        image: __REGION__-docker.pkg.dev/__PROJECT__/default-repository/init-db:latest
         env:
         - name: DB_HOST
           valueFrom:

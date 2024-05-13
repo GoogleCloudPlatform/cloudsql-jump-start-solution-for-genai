@@ -29,7 +29,7 @@ spec:
       serviceAccountName: "app-sa"
       containers:
       - name: chatbotapi
-        image: us-central1-docker.pkg.dev/__PROJECT__/default-repository/chatbotapi:latest
+        image: __REGION__-docker.pkg.dev/__PROJECT__/default-repository/chatbotapi:latest
         ports:
         - containerPort: 80
         resources:

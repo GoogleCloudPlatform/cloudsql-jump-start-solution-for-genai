@@ -17,12 +17,14 @@
 import sys
 
 
-def prepare_template(filename, project_name):
+def prepare_template(filename, project_name, region="us-central1"):
     lines = []
     with open(filename, "r") as fin:
         for line in fin:
             if "__PROJECT__" in line:
                 line = line.replace("__PROJECT__", project_name)
+            if "__REGION__" in line:
+                line = line.replace("__REGION__", region)
             lines.append(line)
     with open(filename, "w") as fout:
         fout.writelines(lines)
@@ -35,4 +37,4 @@ yaml_templates = [
 ]
 
 for t in yaml_templates:
-    prepare_template(t, sys.argv[1])
+    prepare_template(t, sys.argv[1], sys.argv[2])

@@ -23,7 +23,7 @@ spec:
       serviceAccountName: "app-sa"
       containers:
       - name: load-embeddings
-        image: us-central1-docker.pkg.dev/__PROJECT__/default-repository/load-embeddings:latest
+        image: __REGION__-docker.pkg.dev/__PROJECT__/default-repository/load-embeddings:latest
         env:
         - name: DB_HOST
           valueFrom:

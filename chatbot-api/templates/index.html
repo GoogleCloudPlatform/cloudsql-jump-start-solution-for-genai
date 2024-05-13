@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Ecommerce Shop</title>
+    <link rel="stylesheet" href="style.css"> 
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <style>
+/* General Styling */
+body {
+    background-color: #edf4f9;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    font-size: 40px;
+}
+
+
+/* Header */
+header {
+    background-color: #a9ecfb;
+    color: #ffffffe3;
+    padding: 15px 0;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav li {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+/* Hero */
+.hero {
+    background-color: #edf4f9;
+    padding: 10px 0;
+    text-align: left;
+}
+
+.hero img {
+    max-width: 400px;
+}
+
+/* Product Grid */
+.product-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: left;
+}
+
+.product-card1 {
+    border: 1px solid #ddd;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    width: 280px;
+}
+
+.product-card2 {
+    border: 1px solid #ddd;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    width: 280px;
+}
+
+.product-card3 {
+    border: 1px solid #ddd;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    width: 280px;
+}
+
+/* Buttons */
+.button {
+    background-color: #28a55c;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* ... Add more styles as needed */
+/* ... Add more styles */
+
+.chat-container {
+    width: 1000px;
+    height: 520px;
+    margin: 20px 60px 20px 20px;
+    border: 1px solid #090000;
+    border-radius: 24px; /* Slightly rounded corners */
+    box-shadow: 0 4px 5px rgba(214, 16, 16, 0.15); /* Subtle shadow */
+    background-color: #a9ecfb;
+    float: center;
+}
+
+.chat-output {
+    height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #f8f8f8; /* Light background for messages */
+    font-size: 20px;
+}
+
+.chat-output p {  /* Styling for individual messages */
+    margin: 8px 0;
+    padding: 8px 12px;
+    border-radius: 5px;
+}
+
+.chat-output p.user-msg { 
+    background-color: #5d8df6; /* User msg color */
+    text-align: left;
+}
+
+.chat-output p.bot-msg { 
+    background-color: #1225ef; /* Bot msg color */
+    text-align: right; 
+}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ccc; /* Border above input */
+}
+
+#text {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px; 
+}
+
+#sendButton {
+    background-color: #0084ff;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+    </style>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatOutput = document.querySelector('.chat-output');
+
+        sendButton.addEventListener('click', () => {
+            const message = messageInput.value;
+            messageInput.value = ''; // Clear input
+            sendMessage(message);
+            displayMessage(message);
+        });
+
+        function sendMessage(message) {
+            const query = new URLSearchParams({q: message}).toString();
+            const url = "/chatbot?" + query;
+            fetch(url)
+                .then(resp => resp.json())
+                .then(data => displayMessage(data.answer));
+        }
+
+        function displayMessage(message) {
+            chatOutput.innerHTML = ''; // Clear chatOutput content
+            
+            // Insert message into chat history
+            const el = document.createElement("li");
+            el.innerHTML = message;
+            chatOutput.appendChild(el);
+        }
+    });
+
+</script>
+
+ </head>
+ <body>
+    <header>
+        <div class="container"> 
+            <div class="logo">
+                <h1><a href="#">Cymbal Media</a></h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#">Your favorite place for news article</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section>
+        <div class="mdl-layout mdl-js-layout">
+            <div class="mdl-layout__content">
+                <div class="chat-container">
+                    <div class="chat-input">
+                        <input type="text" id="messageInput" class="mdl-textfield__input" placeholder="Ask me anything...">
+                        <button id="sendButton"><i class="material-icons">send</i></button>
+                    </div>
+                    <ul class="chat-output"></ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+</body>
+
+</html>

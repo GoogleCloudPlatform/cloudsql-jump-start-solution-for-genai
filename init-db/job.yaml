@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: batch/v1
+apiVersion: run.googleapis.com/v1
 kind: Job
 metadata:
-  name: load-embeddings
+  name: init-db
 spec:
   template:
     spec:
-      # Service account associated with IAM service account
-      serviceAccountName: "app-sa"
       containers:
-      - name: load-embeddings
-        image: us-central1-docker.pkg.dev/__PROJECT__/default-repository/load-embeddings:latest
+      - name: init-db
+        image: __REGION__-docker.pkg.dev/__PROJECT__/default-repository/init-db:latest
         env:
         - name: DB_HOST
           valueFrom:
@@ -33,8 +31,18 @@ spec:
         - name: DB_USER
           valueFrom:
             secretKeyRef:
+              name: db-admin
+              key: username
+        - name: APP_USER
+          valueFrom:
+            secretKeyRef:
               name: db-iam-connection-info
               key: username
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: db-admin
+              key: password
         - name: DB_NAME
           valueFrom:
             secretKeyRef:

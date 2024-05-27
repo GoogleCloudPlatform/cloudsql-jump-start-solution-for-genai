@@ -47,10 +47,9 @@ locals {
     "sqladmin.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
-    "container.googleapis.com",
+    "run.googleapis.com",
     "dns.googleapis.com",
     "compute.googleapis.com",
-    "container.googleapis.com",
     "aiplatform.googleapis.com",
   ]
 }

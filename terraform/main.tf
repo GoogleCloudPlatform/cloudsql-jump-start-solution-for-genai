@@ -16,6 +16,7 @@
 
 locals {
   network_name = "production-network"
+  subnet_name = "run-subnet"
 
   subnet_names = [
     for subnet_self_link in module.gcp_network.subnets_self_links :
@@ -23,7 +24,7 @@ locals {
   ]
 
   iam_sa_username = trimsuffix(
-    module.workload_identity.gcp_service_account_email,
+    google_service_account.run_sa.email,
     ".gserviceaccount.com",
   )
 }

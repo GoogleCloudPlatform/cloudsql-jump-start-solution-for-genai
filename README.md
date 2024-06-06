@@ -4,11 +4,11 @@
 
 Here is a demo of how to build a basic chatbot API that:
 
-- Leverages GKE, Cloud SQL, VertexAI, and pgvector
+- Leverages Cloud Run, Cloud SQL, VertexAI, and pgvector
 - Demonstrates connectivity to Cloud SQL using Private Service Connect in a VPC
 - Codifies all infrastructure including using Terraform
 - Uses Python with asyncpg and FastAPI
-- (optional) Supports cross-project setups with Cloud SQL and GKE in separate
+- (optional) Supports cross-project setups with Cloud SQL and Cloud Run in separate
   projects
 
 This demo is an operationalized version of a previously published colab,
@@ -22,21 +22,13 @@ LLMs][colab].
 To get started you will need to install:
 
 - gcloud (with a Google Cloud project configured)
-- kubectl (available through gcloud)
 - terraform
-- (optional but very nice) k9s
 
 No one wants to write "terraform" on the CLI. So do this instead to save some
 keystrokes:
 
 ```sh
 alias tf="terraform"
-```
-
-Ditto with `kubectl`:
-
-```sh
-alias k="kubectl"
 ```
 
 Lastly, make sure you have gcloud pointing at the correct project where you
@@ -53,7 +45,7 @@ There are a few steps:
 1. Bootstrap Terraform using the terraform-bootstrap folder.
 2. Create all infrastructure with the terraform folder
 3. Build images for three separate apps using Cloud Build
-4. Deploy the apps to GKE and see it all working together!
+4. Deploy to Cloud Run and see it all working together!
 
 ### Bootstrapping Terraform
 
@@ -122,14 +114,14 @@ should look something like this:
 
 ```sh
 google_cloud_db_project     = "my-cool-project"
-google_cloud_k8s_project    = "my-cool-project"
+google_cloud_run_project    = "my-cool-project"
 google_cloud_default_region = "us-central1"
 create_bastion              = false
 ```
 
-If you want to put your GKE cluster and Cloud SQL instance in separate
+If you want to put your Cloud Run servcice and Cloud SQL instance in separate
 projects, use different project names. Otherwise, by using the same value for
-both variables, both the GKE cluster and Cloud SQL instance will be created in
+both variables, both the Cloud Run and Cloud SQL instance will be created in
 one project.
 
 Note: `create_bastion` if set to true will create a GCE VM in the same network
@@ -146,8 +138,6 @@ infrastructure. Run `tf apply`. This will take awhile as it has to:
 - Create a Cloud SQL database instance with IAM authentication enabled
 - Create an IAM user for running apps and authenticating to the database
 - Create a database for the app
-- Create a GKE autopilot cluster
-- Configure workload identity associated with the IAM user
 - Create an Artifact Registry for pushing images
 - When using two projects, add the IAM user as a member of the database
   project
@@ -174,127 +164,124 @@ There are three images we need to build:
 
 To build the images, change into each directory named above and run the
 following command. Note for a two project setup these images should be created
-in the GKE cluster project (add `--project=<GKE_PROJECT>` below).
+in the Cloud Run project (add `--project=<RUN_PROJECT>` below).
 
 ```sh
 gcloud builds submit --config cloudbuild.yaml --region <YOUR_CHOSEN_REGION>
 ```
 
-### Deploy to K8s and see it work!
+### Deploy to Cloud Run and see it work
 
 We have three steps:
 
-1. Deploy the `init-db` job and let it run to completion (fast)
-2. Deploy the `load-embeddings` job and let it run to completion (takes a few
-   minutes)
-3. Deploy the `chatbot-api` app (deployment + service) and interact with it.
+1. Deploy the `init-db` as a Cloud Run Job and let it run to completion (fast)
+2. Deploy the `load-embeddings` as a Cloud Run Job and let it run to completion
+   (takes a few minutes)
+3. Deploy the `chatbot-api` app as a Cloud Run Service and interact with it.
 
 Before we deploy anything, we need to update the Kubernetes YAML files to point
 to the images we built above. Right now if you look in any of the job.yaml or
 deployment.yaml files, you'll see the image has a `__PROJECT__` string in the
 `image` property. We need to change this. Fortunately, we have a script to do
 this for us. For two project setups, the project name should be the project
-that hosts the GKE cluster and where the images were built above.
+that will host the Cloud Run service and where the images were built above.
 
 ```sh
-./scripts/configure-k8s.sh <YOUR_PROJECT_HERE>
+./scripts/configure-jobs.sh <YOUR_PROJECT_HERE> <YOUR_REGION_HERE>
 
 # For example:
 
-./scripts/configure-k8s.sh my-cool-project
+./scripts/configure-jobs.sh my-cool-project us-central1 
 ```
-
-Now let's connect kubectl to your cluster:
-
-```sh
-# Run this only if you haven't connected to a GKE cluster with gcloud before
-gcloud components install gke-gcloud-auth-plugin
-
-# Now configure kubectl to talk to your cluster
-gcloud container clusters get-credentials prod-toy-store-semantic-search \
-    --region=<COMPUTE_REGION>
-```
-
-For more details, see [the docs on connecting kubectl][kubectl-gcloud].
-
-[kubectl-gcloud]: https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl
 
 Once that's done, we should be good to deploy.
 
-First, we will deploy the init-db job that connects to the database as the
+First, we will deploy the  `init-db` job that connects to the database as the
 Postgres user, creates the database, grants permissions to the IAM user, and
 creates the pgvector extension.
 
+Create the `init-db` Cloud Run Job:
+
 ```sh
-k apply -f init-db/k8s/job.yaml
+gcloud run jobs replace init-db/job.yaml
 ```
 
-Either monitor that job with k9s, or:
+Run the job by executing it:
 
 ```sh
-k get jobs
+gcloud run jobs execute init-db
 ```
 
-Once you see the job is completed, move on to the second job.
+Once you see the job has been triggered, it should output the job ID. You can
+monitor the status of the job using the JOB ID.
 
 ```sh
-k apply -f load-embeddings/k8s/job.yaml
+gcloud run jobs executions describe init-db-<JOB_ID>
+```
+
+Once you see the job is completed, move on to the `load-embeddings` job. This job
+loads in the toy dataset and generates text embeddings using VertexAI and stores
+them in the database using pgvector.
+
+Create the `load-embeddings` Cloud Run Job:
+
+```sh
+gcloud run jobs replace load-embeddings/job.yaml
+```
+
+Run the job by executing it:
+
+```sh
+gcloud run jobs execute load-embeddings
+```
+
+Once you see the job has been triggered, it should output the job ID. You can
+monitor the status of the job using the JOB ID.
+
+```sh
+gcloud run jobs executions describe load-embeddings-<JOB_ID>
 ```
 
 This job takes a few minutes. It needs to parse CSV data, generate text
 embeddings using VertexAI, and then load those embeddings into our database
 using pgvector.
 
-When that job is done, we're ready to deploy our app:
+When that job is done, we're ready to deploy our chatbot app:
 
 ```sh
-k apply -f chatbot-api/k8s/deployment.yaml
+gcloud run services replace chatbot-api/service.yaml
 ```
 
-Next, we'll create a load balancer to make the API accessible from the public
-internet. Skip the next two steps if you would rather just set up
-port-forwarding to localhost.
-
-```sh
-k apply -f chatbot-api/k8s/service.yaml
-```
-
-The service deployment will take a bit to provision an external IP address.
-View the progress with:
-
-```sh
-k get services
-```
-
-Look for `chatbotapi-service` under the `EXTERNAL-IP` field to find the IP.
+When the service has finished deploying, it should output the service URL.
 
 #### Port Forward to localhost
 
-Instead of using a load balancer, it's also possible to expose the deployment
-locally and interact with it locally.
+The service is setup to require authenticated requests. It's also possible to
+expose the service locally and interact with it over localhost via use of the
+[cloud run services proxy](https://cloud.google.com/sdk/gcloud/reference/run/services/proxy).
 
-First, you need to know the pod name where the deployment is running:
-
-```sh
-k get pods
-```
-
-Find the pod name from that result, and run:
+To run the services proxy:
 
 ```sh
-k port-forward <POD_NAME> 8080:80
+gcloud run services proxy chatbotapi-service --port=8080 --region=<YOUR_REGION>
 ```
 
 This will start a local listener on port 8080. For all the commands below,
-substitute localhost:8080 for `<EXTERNAL_IP>`. Once you're done, make sure
+substitute localhost:8080 for `<SERVICE_URL>`. Once you're done, make sure
 to stop the port-forwarding process to close the local listener.
 
-### See it work!
+### See it work
 
 Now it's time to test our wiring:
 
 ```sh
-curl -i <EXTERNAL_IP>
+curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" <SERVICE_URL> 
+```
+
+Or if you have the services proxy its even easier:
+
+```sh
+curl localhost:8080
 ```
 
 The root endpoint will print out the Postgres version in the response. If the
@@ -304,7 +291,7 @@ Next you can run a query against our pgvector data:
 
 ```sh
 # To send a search do this:
-curl <EXTERNAL_IP>/search --get --data-urlencode "q=indoor games"
+curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" <SERVICE_URL>/search --get --data-urlencode "q=indoor games"
 
 # Or using the localhost port forwarding
 curl localhost:8080/search --get --data-urlencode "q=indoor games" | jq .
@@ -315,7 +302,7 @@ That response will be a bunch of matching toy products.
 And finally, we can engage our LLM chatbot like so:
 
 ```sh
-curl <EXTERNAL_IP>/chatbot --get \
+curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" <SERVICE_URL>/chatbot --get \
   --data-urlencode "q=what is a good toy for rainy days?"
 
 # Or using the localhost port forwarding
@@ -329,16 +316,12 @@ picked from all the possible matches.
 ## Tear it all down
 
 Now that you're done and want to tear all the infrastructure down, first delete
-the deployment:
+the Cloud Run service and jobs:
 
 ```sh
-k delete -f chatbot-api/k8s/deployment.yaml
-```
-
-If you created a load balancer also run:
-
-```sh
-k delete -f chatbot-api/k8s/service.yaml
+gcloud run jobs delete init-db
+gcloud run jobs delete load-embeddings
+gcloud run services delete chatbotapi-service
 ```
 
 Then, clean up the infrastructure. It's possible you might have to run destroy

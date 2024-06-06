@@ -12,58 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: serving.knative.dev/v1
+kind: Service
 metadata:
-  name: chatbotapi
+  name: chatbotapi-service
+  labels:
+    cloud.googleapis.com/location: __REGION__
 spec:
-  selector:
-    matchLabels:
-      app: chatbotapi
   template:
     metadata:
-      labels:
-        app: chatbotapi
+      annotations:
+        run.googleapis.com/network-interfaces: '[{"network":"production-network","subnetwork":"run-subnet"}]'
+        run.googleapis.com/vpc-access-egress: all-traffic
     spec:
-      # Service account associated with IAM service account
-      serviceAccountName: "app-sa"
+      serviceAccountName: cloud-run-sa
       containers:
       - name: chatbotapi
         image: __REGION__-docker.pkg.dev/__PROJECT__/default-repository/chatbotapi:latest
         ports:
         - containerPort: 80
-        resources:
-          limits:
-            cpu: "1"
-            ephemeral-storage: 1Gi
-            memory: 2Gi
-          requests:
-            cpu: "1"
-            ephemeral-storage: 1Gi
-            memory: 2Gi
         env:
         - name: DB_HOST
           valueFrom:
             secretKeyRef:
-              name: db-iam-connection-info
-              key: host
+              name: db-host
+              key: latest
         - name: DB_USER
           valueFrom:
             secretKeyRef:
-              name: db-iam-connection-info
-              key: username
+              name: db-iam-user
+              key: latest
         - name: DB_NAME
           valueFrom:
             secretKeyRef:
-              name: db-iam-connection-info
-              key: dbname
-        - name: REGION
-          valueFrom:
-            secretKeyRef:
-              name: project-metadata
-              key: region
+              name: db-name
+              key: latest
         - name: PROJECT_ID
-          valueFrom:
-            secretKeyRef:
-              name: project-metadata
-              key: projectid
+          value: __PROJECT__
+        - name: REGION
+          value: __REGION__

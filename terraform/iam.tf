@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+# Cloud Run service account
 resource "google_service_account" "run_sa" {
   project      = var.google_cloud_run_project
   account_id   = "cloud-run-sa"
@@ -23,11 +24,17 @@ resource "google_service_account" "run_sa" {
 resource "google_project_iam_member" "database_access" {
   project = var.google_cloud_db_project
   role    = "roles/cloudsql.instanceUser"
-  member  = "serviceAccount:${google_service_account.run_sa.sa.email}"
+  member  = "serviceAccount:${google_service_account.run_sa.email}"
 }
 
 resource "google_project_iam_member" "aiplatform_user" {
   project = var.google_cloud_db_project
   role    = "roles/aiplatform.user"
-  member  = "serviceAccount:${google_service_account.run_sa.sa.email}"
+  member  = "serviceAccount:${google_service_account.run_sa.email}"
+}
+
+resource "google_project_iam_member" "secret_manager_access" {
+  project = var.google_cloud_db_project
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.run_sa.email}"
 }

@@ -22,7 +22,3 @@ output "cloud_sql_root_password" {
   value     = random_password.default.result
   sensitive = true
 }
-
-output "application_workload_identity" {
-  value = module.workload_identity.gcp_service_account_email
-}

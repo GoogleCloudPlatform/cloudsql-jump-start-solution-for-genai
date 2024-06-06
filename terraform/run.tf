@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-module "workload_identity" {
-  source     = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
-  name       = "app-sa"
-  namespace  = "default"
-  project_id = var.google_cloud_k8s_project
-  roles = [
-    "roles/aiplatform.user",
-  ]
-}
-
-resource "google_project_iam_member" "database_access" {
-  project = var.google_cloud_db_project
-  role    = "roles/cloudsql.instanceUser"
-  member  = "serviceAccount:${module.workload_identity.gcp_service_account_email}"
+ resource "google_cloud_run_v2_service" "default" {
+  name     = "cloudrun-service"
+  location = "us-central1"
+  launch_stage = "GA"
+  template {
+    containers {
+      image = "us-docker.pkg.dev/cloudrun/container/hello"
+    }
+    vpc_access{
+      network_interfaces {
+        network = "default"
+        subnetwork = "default"
+        tags = ["tag1", "tag2", "tag3"]
+      }
+    }
+  }
 }

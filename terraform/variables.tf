@@ -19,8 +19,8 @@ variable "google_cloud_db_project" {
   type        = string
 }
 
-variable "google_cloud_k8s_project" {
-  description = "Google Cloud Project for the K8s cluster"
+variable "google_cloud_run_project" {
+  description = "Google Cloud Project for the Cloud Run service"
   type        = string
 }
 

@@ -42,7 +42,7 @@ resource "google_sql_database_instance" "default" {
       psc_config {
         psc_enabled = true
         allowed_consumer_projects = [
-          var.google_cloud_k8s_project
+          var.google_cloud_run_project
         ]
       }
       ipv4_enabled = false

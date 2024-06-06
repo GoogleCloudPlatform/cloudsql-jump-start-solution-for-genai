@@ -16,14 +16,14 @@
 
 resource "google_service_account" "default" {
   count        = var.create_bastion ? 1 : 0
-  project      = var.google_cloud_k8s_project
+  project      = var.google_cloud_run_project
   account_id   = "custom-compute-sa"
   display_name = "Custom SA for VM Instance"
 }
 
 resource "google_compute_instance" "default" {
   count        = var.create_bastion ? 1 : 0
-  project      = var.google_cloud_k8s_project
+  project      = var.google_cloud_run_project
   name         = "bastion"
   machine_type = "n2-standard-2"
   zone         = "us-central1-a"
@@ -43,7 +43,7 @@ resource "google_compute_instance" "default" {
   network_interface {
     network            = local.network_name
     subnetwork         = local.subnet_name
-    subnetwork_project = var.google_cloud_k8s_project
+    subnetwork_project = var.google_cloud_run_project
 
     access_config {
       // Ephemeral public IP

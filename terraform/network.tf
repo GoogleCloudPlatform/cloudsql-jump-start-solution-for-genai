@@ -18,7 +18,7 @@ module "gcp_network" {
   source  = "terraform-google-modules/network/google"
   version = ">= 7.5"
 
-  project_id   = var.google_cloud_k8s_project
+  project_id   = var.google_cloud_run_project
   network_name = local.network_name
 
   subnets = [
@@ -30,19 +30,6 @@ module "gcp_network" {
       subnet_private_access = true
     },
   ]
-
-  secondary_ranges = {
-    (local.subnet_name) = [
-      {
-        range_name    = local.gke_pods_range_name
-        ip_cidr_range = "192.168.0.0/24"
-      },
-      {
-        range_name    = local.gke_svc_range_name
-        ip_cidr_range = "192.168.64.0/24"
-      },
-    ]
-  }
 
   ingress_rules = [
     {
@@ -79,7 +66,7 @@ module "gcp_network" {
 }
 
 resource "google_compute_address" "default" {
-  project      = var.google_cloud_k8s_project
+  project      = var.google_cloud_run_project
   name         = "${google_sql_database_instance.default.name}-address"
   region       = var.google_cloud_default_region
   subnetwork   = module.gcp_network.subnets_names[0]
@@ -87,7 +74,7 @@ resource "google_compute_address" "default" {
 }
 
 resource "google_compute_forwarding_rule" "default" {
-  project               = var.google_cloud_k8s_project
+  project               = var.google_cloud_run_project
   name                  = "${google_sql_database_instance.default.name}-forwarding-rule"
   region                = var.google_cloud_default_region
   network               = module.gcp_network.network_name
@@ -97,7 +84,7 @@ resource "google_compute_forwarding_rule" "default" {
 }
 
 resource "google_dns_managed_zone" "psc" {
-  project     = var.google_cloud_k8s_project
+  project     = var.google_cloud_run_project
   name        = "${google_sql_database_instance.default.name}-zone"
   dns_name    = "${google_sql_database_instance.default.region}.sql.goog."
   description = "Regional zone for Cloud SQL PSC instances"
@@ -110,7 +97,7 @@ resource "google_dns_managed_zone" "psc" {
 }
 
 resource "google_dns_record_set" "psc" {
-  project      = var.google_cloud_k8s_project
+  project      = var.google_cloud_run_project
   name         = google_sql_database_instance.default.dns_name
   type         = "A"
   ttl          = 300

@@ -51,6 +51,7 @@ locals {
     "dns.googleapis.com",
     "compute.googleapis.com",
     "aiplatform.googleapis.com",
+    "secretmanager.googleapis.com",
   ]
 }
 

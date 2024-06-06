@@ -133,8 +133,8 @@ publicly reachable load balancer to expose our app within our private cluster.
 Now, with the configuration out of the way, we're ready to create some
 infrastructure. Run `tf apply`. This will take awhile as it has to:
 
-- Create a VPC network with a subnet with both a primary range and two
-  secondary ranges
+- Create a VPC network with a subnet reserved for Cloud Run
+  direct VPC egress
 - Create a Cloud SQL database instance with IAM authentication enabled
 - Create an IAM user for running apps and authenticating to the database
 - Create a database for the app

@@ -31,7 +31,6 @@ def prepare_template(filename, project_name, region="us-central1"):
 
 
 yaml_templates = [
-    "chatbot-api/k8s/deployment.yaml",
     "init-db/job.yaml",
     "load-embeddings/job.yaml",
 ]

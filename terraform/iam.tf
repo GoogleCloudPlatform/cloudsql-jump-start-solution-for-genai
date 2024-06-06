@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
- resource "google_cloud_run_v2_service" "default" {
-  name     = "cloudrun-service"
-  location = "us-central1"
-  launch_stage = "GA"
-  template {
-    containers {
-      image = "us-docker.pkg.dev/cloudrun/container/hello"
-    }
-    vpc_access{
-      network_interfaces {
-        network = "default"
-        subnetwork = "default"
-        tags = ["tag1", "tag2", "tag3"]
-      }
-    }
-  }
+resource "google_service_account" "run_sa" {
+  project      = var.google_cloud_run_project
+  account_id   = "cloud-run-sa"
+  display_name = "Custom SA for Cloud Run Service"
+}
+
+resource "google_project_iam_member" "database_access" {
+  project = var.google_cloud_db_project
+  role    = "roles/cloudsql.instanceUser"
+  member  = "serviceAccount:${google_service_account.run_sa.sa.email}"
+}
+
+resource "google_project_iam_member" "aiplatform_user" {
+  project = var.google_cloud_db_project
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.run_sa.sa.email}"
 }

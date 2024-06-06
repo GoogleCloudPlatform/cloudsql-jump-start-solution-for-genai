@@ -15,10 +15,7 @@
  */
 
 locals {
-  network_name        = "production-network"
-  subnet_name         = "k8s-subnet"
-  gke_pods_range_name = "gke-pods-autopilot-private"
-  gke_svc_range_name  = "gke-svc-autopilot-private"
+  network_name = "production-network"
 
   subnet_names = [
     for subnet_self_link in module.gcp_network.subnets_self_links :

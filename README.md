@@ -291,7 +291,8 @@ Next you can run a query against our pgvector data:
 
 ```sh
 # To send a search do this:
-curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" <SERVICE_URL>/search --get --data-urlencode "q=indoor games"
+curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" \
+  <SERVICE_URL>/search --get --data-urlencode "q=indoor games"
 
 # Or using the localhost port forwarding
 curl localhost:8080/search --get --data-urlencode "q=indoor games" | jq .
@@ -302,7 +303,8 @@ That response will be a bunch of matching toy products.
 And finally, we can engage our LLM chatbot like so:
 
 ```sh
-curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" <SERVICE_URL>/chatbot --get \
+curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" \
+  <SERVICE_URL>/chatbot --get \
   --data-urlencode "q=what is a good toy for rainy days?"
 
 # Or using the localhost port forwarding

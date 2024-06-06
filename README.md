@@ -116,19 +116,12 @@ should look something like this:
 google_cloud_db_project     = "my-cool-project"
 google_cloud_run_project    = "my-cool-project"
 google_cloud_default_region = "us-central1"
-create_bastion              = false
 ```
 
-If you want to put your Cloud Run servcice and Cloud SQL instance in separate
+If you want to put your Cloud Run service and Cloud SQL instance in separate
 projects, use different project names. Otherwise, by using the same value for
 both variables, both the Cloud Run and Cloud SQL instance will be created in
 one project.
-
-Note: `create_bastion` if set to true will create a GCE VM in the same network
-as your cluster's network. It can be useful for debugging or poking around, as
-the cluster nodes and database won't be directly accessible from the public
-internet otherwise. This is entirely optional, though, as we will be creating a
-publicly reachable load balancer to expose our app within our private cluster.
 
 Now, with the configuration out of the way, we're ready to create some
 infrastructure. Run `tf apply`. This will take awhile as it has to:
@@ -179,12 +172,13 @@ We have three steps:
    (takes a few minutes)
 3. Deploy the `chatbot-api` app as a Cloud Run Service and interact with it.
 
-Before we deploy anything, we need to update the Kubernetes YAML files to point
+Before we deploy anything, we need to update the Cloud Run YAML files to point
 to the images we built above. Right now if you look in any of the job.yaml or
-deployment.yaml files, you'll see the image has a `__PROJECT__` string in the
-`image` property. We need to change this. Fortunately, we have a script to do
-this for us. For two project setups, the project name should be the project
-that will host the Cloud Run service and where the images were built above.
+service.yaml files, you'll see the image has  `__PROJECT__` and `__REGION__`
+strings in the `image` property. We need to change this. Fortunately, we have a
+script to do this for us. For two project setups, the project name should be the
+project that will host the Cloud Run service and where the images were built
+above.
 
 ```sh
 ./scripts/configure-jobs.sh <YOUR_PROJECT_HERE> <YOUR_REGION_HERE>

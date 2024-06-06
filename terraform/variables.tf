@@ -29,8 +29,3 @@ variable "google_cloud_default_region" {
   default     = "us-central1"
   type        = string
 }
-
-variable "create_bastion" {
-  description = "Creation a Bastion instance for debugging"
-  default     = false
-}

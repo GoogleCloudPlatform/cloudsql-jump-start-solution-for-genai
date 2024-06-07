@@ -24,7 +24,7 @@ spec:
       annotations:
         run.googleapis.com/network-interfaces: '[{"network":"production-network","subnetwork":"run-subnet"}]'
         run.googleapis.com/vpc-access-egress: all-traffic
-        run.googleapis.com/minScale: '1'
+        autoscaling.knative.dev/minScale: '1'
     spec:
       serviceAccountName: cloud-run-sa
       containers:

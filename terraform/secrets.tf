@@ -79,7 +79,7 @@ resource "google_secret_manager_secret_version" "db_iam_user_data" {
   secret_data = local.iam_sa_username
 }
 
-# Create db_admin_pass secret
+# Create db_name secret
 resource "google_secret_manager_secret" "db_name" {
   project   = var.google_cloud_run_project
   secret_id = "db-name"

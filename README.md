@@ -270,7 +270,7 @@ expose the service locally and interact with it over localhost via use of the
 To run the services proxy:
 
 ```sh
-gcloud run services proxy chatbotapi-service --port=8080 --region=<YOUR_REGION>
+gcloud run services proxy chatbotapi-service --port=8080
 ```
 
 This will start a local listener on port 8080. For all the commands below,

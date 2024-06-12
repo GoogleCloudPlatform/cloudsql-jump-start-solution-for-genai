@@ -136,9 +136,11 @@ infrastructure. Run `tf apply`. This will take awhile as it has to:
   project
 - etc.
 
-**Note:** If you are running the terraform commands on Cloud Shell and see
-the following error ending with `connect: cannot assign requested address`,
-then please see [this known issue and fix](https://github.com/hashicorp/terraform-provider-google/issues/6782#issuecomment-874574409).
+> [!NOTE]
+>
+> If you are running the terraform commands on Cloud Shell and see
+> the following error ending with `connect: cannot assign requested address`,
+> then please see [this known issue and fix](https://github.com/hashicorp/terraform-provider-google/issues/6782#issuecomment-874574409).
 
 Now would be a good time to read through the various Terraform files.
 

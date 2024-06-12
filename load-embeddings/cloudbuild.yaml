@@ -15,10 +15,10 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   script: |
-    docker build -t "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/default-repository/load-embeddings:latest" .
-  automapSubstitutions: true
-serviceAccount: 'projects/${PROJECT_ID}/serviceAccounts/cloud-build-sa'
+    docker build -t "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/default-repository/init-db:latest" .
+serviceAccount: 'projects/${PROJECT_ID}/serviceAccounts/cloud-build-sa@${PROJECT_ID}.iam.gserviceaccount.com'
+logsBucket: 'gs://${PROJECT_ID}-cloud-build'
 images:
-- "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/default-repository/load-embeddings:latest"
+- "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/default-repository/init-db:latest"
 options:
-  logging: CLOUD_LOGGING_ONLY
+  automapSubstitutions: true

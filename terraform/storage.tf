@@ -16,6 +16,7 @@
 
 resource "google_storage_bucket" "cloud-build" {
   name          = "${var.google_cloud_run_project}-cloud-build"
+  project       =  var.google_cloud_run_project
   force_destroy = true
   location      = "US"
   storage_class = "STANDARD"

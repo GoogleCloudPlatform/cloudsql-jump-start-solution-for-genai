@@ -17,5 +17,6 @@ steps:
   script: |
     docker build -t "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/default-repository/chatbotapi:latest" .
   automapSubstitutions: true
+serviceAccount: 'projects/${PROJECT_ID}/serviceAccounts/cloud-build-sa'
 images:
 - "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/default-repository/chatbotapi:latest"

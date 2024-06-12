@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-# Cloud Run service account
+# --------- Cloud Run service account ---------
 resource "google_service_account" "run_sa" {
   project      = var.google_cloud_run_project
   account_id   = "cloud-run-sa"
@@ -37,4 +37,17 @@ resource "google_project_iam_member" "secret_manager_access" {
   project = var.google_cloud_db_project
   role    = "roles/secretmanager.secretAccessor"
   member  = "serviceAccount:${google_service_account.run_sa.email}"
+}
+
+# --------- Cloud Build service account ---------
+resource "google_service_account" "build_sa" {
+  project      = var.google_cloud_run_project
+  account_id   = "cloud-build-sa"
+  display_name = "Custom SA for Cloud Build"
+}
+
+resource "google_project_iam_member" "logs_writer" {
+  project = var.google_cloud_run_project
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.build_sa.email}"
 }

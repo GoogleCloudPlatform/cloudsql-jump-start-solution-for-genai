@@ -51,3 +51,9 @@ resource "google_project_iam_member" "logs_writer" {
   role    = "roles/logging.logWriter"
   member  = "serviceAccount:${google_service_account.build_sa.email}"
 }
+
+resource "google_project_iam_member" "object_viewer" {
+  project = var.google_cloud_run_project
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${google_service_account.build_sa.email}"
+}

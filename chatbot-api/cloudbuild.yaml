@@ -21,4 +21,4 @@ serviceAccount: 'projects/${PROJECT_ID}/serviceAccounts/cloud-build-sa'
 images:
 - "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/default-repository/chatbotapi:latest"
 options:
-  logging: GCS_ONLY
+  logging: CLOUD_LOGGING_ONLY

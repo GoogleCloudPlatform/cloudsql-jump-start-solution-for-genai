@@ -43,15 +43,16 @@ output "storage_bucket" {
 
 locals {
   service_list = [
-    "storage.googleapis.com",
-    "sqladmin.googleapis.com",
+    "aiplatform.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
-    "run.googleapis.com",
-    "dns.googleapis.com",
     "compute.googleapis.com",
-    "aiplatform.googleapis.com",
+    "dns.googleapis.com",
+    "iam.googleapis.com",
+    "run.googleapis.com",
     "secretmanager.googleapis.com",
+    "sqladmin.googleapis.com",
+    "storage.googleapis.com",
   ]
 }
 

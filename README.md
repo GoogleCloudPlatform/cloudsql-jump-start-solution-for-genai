@@ -160,7 +160,7 @@ following command. Note for a two project setup these images should be created
 in the Cloud Run project (add `--project=<RUN_PROJECT>` below).
 
 ```sh
-gcloud builds submit --config cloudbuild.yaml --region <YOUR_CHOSEN_REGION>
+gcloud builds submit --config cloudbuild.yaml --region <YOUR_REGION_HERE>
 ```
 
 ### Deploy to Cloud Run and see it work

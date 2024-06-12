@@ -192,6 +192,15 @@ above.
 
 Once that's done, we should be good to deploy.
 
+To not have to specify the Cloud Run region in each of the below commands we
+recommend setting it in `gcloud` via the following command:
+
+```sh
+gcloud config set run/region <YOUR_REGION_HERE>
+```
+
+#### Deploy the `init-db` and `load-embeddings` jobs
+
 First, we will deploy the  `init-db` job that connects to the database as the
 Postgres user, creates the database, grants permissions to the IAM user, and
 creates the pgvector extension.
@@ -242,7 +251,9 @@ This job takes a few minutes. It needs to parse CSV data, generate text
 embeddings using VertexAI, and then load those embeddings into our database
 using pgvector.
 
-When that job is done, we're ready to deploy our chatbot app:
+#### Deploy the `chatbot-api` service
+
+When that job is done, we're ready to deploy our chatbot app as a Cloud Run service:
 
 ```sh
 gcloud run services replace chatbot-api/service.yaml

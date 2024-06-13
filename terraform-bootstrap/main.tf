@@ -26,7 +26,7 @@ resource "google_project_service" "default" {
 
 resource "google_storage_bucket" "default" {
   name          = "${random_id.bucket_prefix.hex}-bucket-tfstate"
-  force_destroy = false
+  force_destroy = true
   location      = "US"
   storage_class = "STANDARD"
 

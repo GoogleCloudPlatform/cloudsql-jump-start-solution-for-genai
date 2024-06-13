@@ -1,6 +1,6 @@
 # Deploy a production ready GenAI app in less than 30 minutes
 
-![name](system-diagram.svg)
+![name](system-diagram.png)
 
 Here is a demo of how to build a basic chatbot API that:
 

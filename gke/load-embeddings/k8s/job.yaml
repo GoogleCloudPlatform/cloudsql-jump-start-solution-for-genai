@@ -1,0 +1,62 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: load-embeddings
+spec:
+  template:
+    spec:
+      # Service account associated with IAM service account
+      serviceAccountName: "app-sa"
+      containers:
+      - name: load-embeddings
+        image: __REGION__-docker.pkg.dev/__PROJECT__/default-repository/load-embeddings:latest
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-iam-connection-info
+              key: host
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-iam-connection-info
+              key: username
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: db-iam-connection-info
+              key: dbname
+        - name: REGION
+          valueFrom:
+            secretKeyRef:
+              name: project-metadata
+              key: region
+        - name: PROJECT_ID
+          valueFrom:
+            secretKeyRef:
+              name: project-metadata
+              key: projectid
+        resources:
+          limits:
+            cpu: "1"
+            ephemeral-storage: 1Gi
+            memory: 2Gi
+          requests:
+            cpu: "1"
+            ephemeral-storage: 1Gi
+            memory: 2Gi
+      restartPolicy: Never

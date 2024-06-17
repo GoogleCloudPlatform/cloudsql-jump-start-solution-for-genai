@@ -1,0 +1,13 @@
+aiohttp==3.9.5
+asyncpg==0.29.0
+fastapi==0.110.3
+google-auth==2.29.0
+google-cloud-aiplatform==1.49.0
+langchain==0.1.17
+langchain-core==0.1.48
+langchain-google-vertexai==1.0.2
+langchain-text-splitters==0.0.1
+numpy==1.26.4
+pandas==2.2.2
+pgvector==0.2.5
+uvicorn==0.29.0

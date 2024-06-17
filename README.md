@@ -1,7 +1,5 @@
 # Deploy a production ready GenAI app in less than 30 minutes
 
-![name](gke/system-diagram.png)
-
 Here is a demo of how to build a basic chatbot API that:
 
 - Leverages GKE or Cloud Run with Cloud SQL, VertexAI, and pgvector
@@ -19,8 +17,19 @@ LLMs][colab].
 
 ## Choose your Architecture
 
+This app can be deployed with two different flavors:
+
+- Google Kubernetes Engine (GKE)
+- Cloud Run
+
 ### GKE ([README](gke/README.md))
 
-![name](gke/system-diagram.png)
+![image](gke/system-diagram.png)
 
 To deploy the app using GKE head to the [gke](gke/README.md) folder.
+
+### Cloud Run ([README](run/README.md))
+
+![image](run/system-diagram.png)
+
+To deploy the app using Cloud Run head to the [run](run/README.md) folder.

@@ -2,7 +2,7 @@
 
 ![name](system-diagram.png)
 
-Here is a demo of how to build a basic chatbot API that:
+Here is a jump start solution of how to build a basic chatbot API that:
 
 - Leverages GKE, Cloud SQL, VertexAI, and pgvector
 - Demonstrates connectivity to Cloud SQL using Private Service Connect in a VPC
@@ -11,7 +11,7 @@ Here is a demo of how to build a basic chatbot API that:
 - (optional) Supports cross-project setups with Cloud SQL and GKE in separate
   projects
 
-This demo is an operationalized version of a previously published colab,
+This solution is an operationalized version of a previously published colab,
 [Building AI-powered data-driven applications using pgvector, LangChain and
 LLMs][colab].
 
@@ -46,7 +46,7 @@ want this infrastructure to live:
 gcloud config set project <PROJECT_ID>
 ```
 
-## Overview of the demo
+## Overview of the jump start solution
 
 There are a few steps:
 

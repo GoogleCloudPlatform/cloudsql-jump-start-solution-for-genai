@@ -2,7 +2,7 @@ aiohttp==3.9.5
 asyncpg==0.29.0
 google-auth==2.29.0
 google-cloud-aiplatform==1.49.0
-langchain==0.1.17
+langchain==0.2.10
 langchain-google-vertexai==1.0.2
 langchain-text-splitters==0.0.1
 numpy==1.26.4

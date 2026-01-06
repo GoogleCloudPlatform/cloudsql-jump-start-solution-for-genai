@@ -1,4 +1,4 @@
-aiohttp==3.9.5
+aiohttp==3.13.3
 asyncpg==0.29.0
 google-auth==2.29.0
 google-cloud-aiplatform==1.49.0
